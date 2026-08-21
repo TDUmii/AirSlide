@@ -64,29 +64,24 @@ def test_no_hand_never_triggers() -> None:
     assert [engine.update(i * 0.1, None, None, False) for i in range(10)] == [GestureEvent.NONE] * 10
 
 
-def test_cooldown_and_rearm_block_repeated_swipes() -> None:
-    engine = detector(cooldown_ms=800)
+def test_cooldown_blocks_immediate_repeat_then_automatically_recovers() -> None:
+    engine = detector(cooldown_ms=500)
     first = feed(engine, [0.30, 0.35, 0.42, 0.50, 0.59, 0.68], start=0.0)
     immediate = feed(engine, [0.30, 0.36, 0.44, 0.53, 0.63, 0.72], start=0.48, step=0.06)
     assert first.count(GestureEvent.SWIPE_RIGHT) == 1
     assert all(event is GestureEvent.NONE for event in immediate)
 
-    # A disappeared hand held long enough after cooldown is an explicit reset.
-    engine.update(1.45, None, None, False)
-    engine.update(1.66, None, None, False)
-    after_rearm = feed(engine, [0.70, 0.65, 0.58, 0.50, 0.41, 0.32], start=1.75)
-    assert after_rearm.count(GestureEvent.SWIPE_LEFT) == 1
+    after_cooldown = feed(engine, [0.70, 0.65, 0.58, 0.50, 0.41, 0.32], start=1.05)
+    assert after_cooldown.count(GestureEvent.SWIPE_LEFT) == 1
 
 
-def test_open_palm_can_swipe_again_after_returning_to_center_in_cooldown() -> None:
-    engine = detector(cooldown_ms=800)
+def test_open_palm_can_swipe_again_without_a_rearm_pose() -> None:
+    engine = detector(cooldown_ms=500)
     swipe = [0.30, 0.35, 0.42, 0.50, 0.59, 0.68]
     first = feed(engine, swipe, start=0.0)
-    reset_motion = feed(engine, [0.64, 0.59, 0.54, 0.50], start=0.50, step=0.08)
-    second = feed(engine, swipe, start=1.28)
+    second = feed(engine, swipe, start=1.05)
 
     assert first.count(GestureEvent.SWIPE_RIGHT) == 1
-    assert all(event is GestureEvent.NONE for event in reset_motion)
     assert second.count(GestureEvent.SWIPE_RIGHT) == 1
 
 

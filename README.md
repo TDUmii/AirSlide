@@ -9,7 +9,7 @@ AirSlide sends only the configured `Right Arrow` and `Left Arrow` keys. It does 
 - Open Palm + Swipe Right → Next Slide
 - Open Palm + Swipe Left → Previous Slide
 - Distance, speed, horizontal-dominance, direction-consistency, and dead-zone checks
-- Separate cooldown and physical rearm gates for one action per swipe
+- A short 500 ms timed cooldown for one action per swipe, with automatic re-enable
 - Stable palm center computed from wrist and four MCP joints
 - MediaPipe Tasks Hand Landmarker with a local pretrained model
 - Mirrored, aspect-ratio-preserving preview with optional landmarks, trajectory, and FPS
@@ -49,10 +49,10 @@ A gesture must satisfy all of the following:
 2. Smoothed palm displacement reaches the configured distance within the rolling gesture window.
 3. Absolute horizontal velocity reaches the minimum velocity.
 4. Horizontal displacement dominates vertical displacement.
-5. At least 74% of meaningful frame-to-frame movement agrees with the final direction.
+5. At least 68% of meaningful frame-to-frame movement agrees with the final direction.
 6. The state machine is armed.
 
-After a trigger, AirSlide enters cooldown and then **Wait for Rearm**. It rearms only after a short, observable reset: hand disappearance, closing the palm, returning near center, or holding the hand still. This is intentionally conservative.
+After a trigger, AirSlide ignores gesture events for 500 ms and then automatically becomes ready again. No closed palm, center return, stationary hold, or hand disappearance is required. Gesture history restarts after cooldown, so a new deliberate movement is still required for the next slide.
 
 ## Requirements
 
@@ -186,7 +186,7 @@ python -m compileall -q main.py src tests scripts
 python scripts\smoke_test.py
 ```
 
-The suite covers right and left swipes, jitter, small movement, slow movement, vertical movement, direction reversals, closed palm, no hand, cooldown, rearm, calibration, settings recovery, and the keyboard controller boundary.
+The suite covers right and left swipes, jitter, small movement, slow movement, vertical movement, direction reversals, closed palm, no hand, automatic cooldown recovery, calibration, settings recovery, and the keyboard controller boundary.
 
 Real camera quality depends on hardware and lighting, so complete final acceptance on the target laptop:
 
@@ -197,7 +197,7 @@ Slow horizontal movement  → no action
 Fast right swipe          → exactly one next action
 Fast left swipe           → exactly one previous action
 Closed-palm movement      → no action
-Rapid repeat              → blocked until cooldown + rearm
+Rapid repeat              → blocked for 500 ms, then automatically enabled
 ```
 
 ## Build the Windows EXE

@@ -89,7 +89,11 @@ class SettingsDialog(QDialog):
 
     def _apply_preset(self) -> None:
         preset = self.sensitivity.currentData()
-        mappings = {"low": (0.23, 0.70, 450), "medium": (0.18, 0.55, 500), "high": (0.14, 0.40, 550)}
+        mappings = {
+            "low": (0.20, 0.60, 500),
+            "medium": (0.15, 0.42, 550),
+            "high": (0.11, 0.30, 600),
+        }
         if preset in mappings:
             distance, velocity, window = mappings[preset]
             self.distance.setValue(distance); self.velocity.setValue(velocity); self.window.setValue(window)
