@@ -91,6 +91,17 @@ The model downloader retrieves Google's official `hand_landmarker.task` float16 
 python main.py
 ```
 
+To avoid accidentally using a different global Python installation on Windows,
+you can run the included launcher instead:
+
+```powershell
+.\run_airslide.cmd
+```
+
+The launcher always uses `.venv\Scripts\python.exe`. AirSlide also performs a
+startup dependency check and shows a clear installation message instead of
+allowing a missing OpenCV/MediaPipe module to fail inside the camera thread.
+
 On first launch:
 
 1. Allow Windows camera access if prompted.

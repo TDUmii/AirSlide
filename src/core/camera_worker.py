@@ -44,11 +44,19 @@ class CameraWorker(QThread):
         self.requestInterruption()
 
     def run(self) -> None:
-        import cv2
-
         camera = None
         tracker = None
         try:
+            try:
+                import cv2
+            except ModuleNotFoundError:
+                message = (
+                    "OpenCV is not installed in the Python environment running AirSlide. "
+                    r"Use .\.venv\Scripts\python.exe main.py or install requirements.txt."
+                )
+                self.logger.exception("OpenCV dependency is unavailable")
+                self.camera_error.emit(message)
+                return
             camera = cv2.VideoCapture(int(self.settings["camera_index"]), cv2.CAP_DSHOW)
             width, height = (1280, 720) if self.settings["resolution"] == "1280x720" else (640, 480)
             camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
