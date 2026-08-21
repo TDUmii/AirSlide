@@ -1,0 +1,23 @@
+{
+  "camera_index": 0,
+  "resolution": "640x480",
+  "mirror": true,
+  "show_landmarks": true,
+  "show_fps": true,
+  "debug_mode": false,
+  "control_hand": "auto",
+  "swipe_threshold": 0.18,
+  "velocity_threshold": 0.55,
+  "gesture_window_ms": 500,
+  "cooldown_ms": 800,
+  "horizontal_ratio": 1.45,
+  "direction_consistency": 0.74,
+  "dead_zone": 0.012,
+  "smoothing_alpha": 0.58,
+  "next_key": "right",
+  "previous_key": "left",
+  "theme": "system",
+  "sensitivity": "medium",
+  "presentation_mode": false,
+  "show_onboarding": true
+}
