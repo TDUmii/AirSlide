@@ -25,4 +25,4 @@ def test_out_of_range_values_are_clamped(tmp_path) -> None:
     path.write_text(json.dumps({"cooldown_ms": 9000, "swipe_threshold": -2}), encoding="utf-8")
     settings = ConfigManager(path).settings
     assert settings["cooldown_ms"] == 2000
-    assert settings["swipe_threshold"] == 0.08
+    assert settings["swipe_threshold"] == 0.05

@@ -54,8 +54,8 @@ class SettingsDialog(QDialog):
         self.sensitivity = self._combo([("Low (fewer triggers)", "low"), ("Medium", "medium"), ("High (easier triggers)", "high"), ("Custom", "custom")], self.values.get("sensitivity", "medium"))
         basic_form.addRow("Preset", self.sensitivity); outer.addWidget(basic)
         advanced = QGroupBox("Advanced settings"); form = QFormLayout(advanced)
-        self.distance = self._double(0.08, 0.40, float(self.values["swipe_threshold"]), 0.01)
-        self.velocity = self._double(0.15, 2.5, float(self.values["velocity_threshold"]), 0.05)
+        self.distance = self._double(0.05, 0.40, float(self.values["swipe_threshold"]), 0.01)
+        self.velocity = self._double(0.10, 2.5, float(self.values["velocity_threshold"]), 0.05)
         self.window = QSpinBox(); self.window.setRange(250, 900); self.window.setSuffix(" ms"); self.window.setValue(int(self.values["gesture_window_ms"]))
         self.cooldown = QSpinBox(); self.cooldown.setRange(300, 2000); self.cooldown.setSuffix(" ms"); self.cooldown.setValue(int(self.values["cooldown_ms"]))
         self.horizontal = self._double(1.0, 3.0, float(self.values["horizontal_ratio"]), 0.05)
@@ -90,9 +90,9 @@ class SettingsDialog(QDialog):
     def _apply_preset(self) -> None:
         preset = self.sensitivity.currentData()
         mappings = {
-            "low": (0.20, 0.60, 500),
-            "medium": (0.15, 0.42, 550),
-            "high": (0.11, 0.30, 600),
+            "low": (0.16, 0.45, 600),
+            "medium": (0.10, 0.25, 700),
+            "high": (0.07, 0.15, 800),
         }
         if preset in mappings:
             distance, velocity, window = mappings[preset]

@@ -91,11 +91,11 @@ class GestureDetector:
         return event
 
     def _classify(self) -> GestureEvent:
-        if len(self.history) < 5:
+        if len(self.history) < 4:
             return GestureEvent.NONE
         first, last = self.history[0], self.history[-1]
         elapsed = last.timestamp - first.timestamp
-        if elapsed < 0.08:
+        if elapsed < 0.06:
             return GestureEvent.NONE
         dx, dy = last.x - first.x, last.y - first.y
         velocity = dx / elapsed
@@ -122,7 +122,7 @@ class GestureDetector:
                 aligned += int(step * direction > 0)
         consistency = aligned / meaningful if meaningful else 0.0
         self.diagnostics.consistency = consistency
-        if meaningful < 3 or consistency < float(self.settings["direction_consistency"]):
+        if meaningful < 2 or consistency < float(self.settings["direction_consistency"]):
             return GestureEvent.NONE
         return GestureEvent.SWIPE_RIGHT if direction > 0 else GestureEvent.SWIPE_LEFT
 

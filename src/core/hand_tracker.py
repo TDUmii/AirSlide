@@ -48,9 +48,9 @@ class HandTracker:
             base_options=mp.tasks.BaseOptions(model_asset_path=str(model_path)),
             running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
             num_hands=2,
-            min_hand_detection_confidence=0.55,
-            min_hand_presence_confidence=0.55,
-            min_tracking_confidence=0.55,
+            min_hand_detection_confidence=0.45,
+            min_hand_presence_confidence=0.45,
+            min_tracking_confidence=0.45,
             result_callback=self._on_result,
         )
         self.landmarker = mp.tasks.vision.HandLandmarker.create_from_options(options)
@@ -97,7 +97,7 @@ class HandTracker:
                     confidence=score,
                     palm_x=palm_x,
                     palm_y=palm_y,
-                    is_open_palm=open_score >= 0.72,
+                    is_open_palm=open_score >= 0.62,
                     open_palm_confidence=open_score,
                 )
             )

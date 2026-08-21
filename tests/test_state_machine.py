@@ -1,6 +1,14 @@
 from src.core.gesture_state_machine import GestureState, GestureStateMachine
 
 
+def test_default_cooldown_is_one_second() -> None:
+    machine = GestureStateMachine()
+    machine.update(0.0, hand_present=True, open_palm=True)
+    machine.trigger(0.1)
+    assert machine.update(1.09, hand_present=True, open_palm=True) is GestureState.COOLDOWN
+    assert machine.update(1.10, hand_present=True, open_palm=True) is GestureState.READY
+
+
 def test_ready_tracking_trigger_and_automatic_cooldown_recovery() -> None:
     machine = GestureStateMachine(cooldown_ms=500)
     assert machine.update(0.0, hand_present=True, open_palm=True) is GestureState.READY

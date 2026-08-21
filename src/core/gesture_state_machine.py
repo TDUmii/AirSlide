@@ -15,7 +15,7 @@ class GestureState(str, Enum):
 class GestureStateMachine:
     """Gate swipe detection for a fixed interval after every trigger."""
 
-    def __init__(self, cooldown_ms: int = 500) -> None:
+    def __init__(self, cooldown_ms: int = 1000) -> None:
         self.cooldown_s = cooldown_ms / 1000.0
         self.state = GestureState.NO_HAND
         self.triggered_at = -1e9

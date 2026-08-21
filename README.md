@@ -6,10 +6,10 @@ AirSlide sends only the configured `Right Arrow` and `Left Arrow` keys. It does 
 
 ## Features
 
-- Open Palm + Swipe Right → Next Slide
-- Open Palm + Swipe Left → Previous Slide
+- Open Palm + Swipe Left → Next Slide (the visible page moves left in Canva)
+- Open Palm + Swipe Right → Previous Slide (the visible page moves right in Canva)
 - Distance, speed, horizontal-dominance, direction-consistency, and dead-zone checks
-- A short 500 ms timed cooldown for one action per swipe, with automatic re-enable
+- A 1-second timed cooldown for one action per swipe, with automatic re-enable
 - Stable palm center computed from wrist and four MCP joints
 - MediaPipe Tasks Hand Landmarker with a local pretrained model
 - Mirrored, aspect-ratio-preserving preview with optional landmarks, trajectory, and FPS
@@ -49,10 +49,10 @@ A gesture must satisfy all of the following:
 2. Smoothed palm displacement reaches the configured distance within the rolling gesture window.
 3. Absolute horizontal velocity reaches the minimum velocity.
 4. Horizontal displacement dominates vertical displacement.
-5. At least 68% of meaningful frame-to-frame movement agrees with the final direction.
+5. At least 67% of meaningful frame-to-frame movement agrees with the final direction.
 6. The state machine is armed.
 
-After a trigger, AirSlide ignores gesture events for 500 ms and then automatically becomes ready again. No closed palm, center return, stationary hold, or hand disappearance is required. Gesture history restarts after cooldown, so a new deliberate movement is still required for the next slide.
+After a trigger, AirSlide ignores gesture events for 1 second and then automatically becomes ready again. No closed palm, center return, stationary hold, or hand disappearance is required. Gesture history restarts after cooldown, so a new deliberate movement is still required for the next slide.
 
 ## Requirements
 
@@ -118,11 +118,11 @@ AirSlide never foregrounds PowerPoint and never sends Enter, Escape, Alt+F4, or 
 
 - Face the palm toward the webcam; the thumb may remain relaxed.
 - Start near the center third of the frame.
-- Move in one clear horizontal direction for roughly 20–45 cm in the real world.
-- Pause, return to center, close the palm, or briefly leave the frame before the next swipe.
+- Move in one clear horizontal direction for roughly 10–25 cm in the real world.
+- Wait about 1 second before the next swipe; no reset pose is required.
 - Avoid letting a bright window sit directly behind the hand.
 
-The mirrored preview matches selfie-camera expectations: moving your visible hand to your right produces **Swipe Right**.
+The mirrored preview matches selfie-camera expectations. In Canva, swiping left advances to the next page so the visible page moves left with your hand; swiping right returns to the previous page.
 
 ## Settings
 
@@ -194,10 +194,10 @@ Real camera quality depends on hardware and lighting, so complete final acceptan
 Open palm still           → no action
 Open palm jitter          → no action
 Slow horizontal movement  → no action
-Fast right swipe          → exactly one next action
-Fast left swipe           → exactly one previous action
+Fast left swipe           → exactly one next action
+Fast right swipe          → exactly one previous action
 Closed-palm movement      → no action
-Rapid repeat              → blocked for 500 ms, then automatically enabled
+Rapid repeat              → blocked for 1 second, then automatically enabled
 ```
 
 ## Build the Windows EXE
@@ -243,7 +243,7 @@ Confirm `models/hand_landmarker.task` is larger than 1 MB. For a packaged build,
 
 ### Swipe appears backward
 
-Keep **Mirror Camera** enabled for natural selfie behavior. If it is disabled, gesture coordinates follow the unmirrored camera image.
+Keep **Mirror Camera** enabled for natural selfie behavior. AirSlide maps a left swipe to the next page and a right swipe to the previous page so Canva's visible page motion follows your hand. If mirroring is disabled, gesture coordinates follow the unmirrored camera image.
 
 ### False positives
 
@@ -308,14 +308,3 @@ AirSlide/
 - Gesture thresholds are normalized image-space values. Camera field of view and user distance vary, so calibration on the presentation laptop is recommended.
 - MediaPipe handedness is inferred from the mirrored input. Extreme occlusion or two overlapping hands can still cause a temporary tracking loss; AirSlide favors the previously tracked handedness to avoid rapid switching.
 - Synthetic tests validate decision logic, but a real webcam acceptance pass is still required for each room, camera, and lighting setup.
-
-## Roadmap
-
-- V1 — Swipe slide control
-- V2 — Finger pointer
-- V3 — Virtual laser pointer
-- V4 — Pinch click
-- V5 — Custom gesture mapping
-- V6 — Presenter analytics
-
-V2–V6 are not implemented in this release, keeping V1 focused on reliable slide navigation.

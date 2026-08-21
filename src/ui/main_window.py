@@ -23,6 +23,11 @@ from src.utils.config_manager import ConfigManager
 from src.utils.paths import resource_path
 
 
+def gesture_moves_to_next_slide(event: str) -> bool:
+    """Match Canva's visible page motion to the presenter's swipe direction."""
+    return event == "SWIPE_LEFT"
+
+
 class MainWindow(QMainWindow):
     def __init__(self, config: ConfigManager) -> None:
         super().__init__()
@@ -136,7 +141,7 @@ class MainWindow(QMainWindow):
 
     def update_status(self, status: dict[str, Any]) -> None:
         state = str(status["system"])
-        colors = {"READY": "#4E9870", "TRACKING": "#B28A3B", "COOLDOWN": "#C07A42", "WAIT FOR REARM": "#C07A42", "NO HAND": "#7A8790"}
+        colors = {"READY": "#4E9870", "TRACKING": "#B28A3B", "COOLDOWN": "#C07A42", "NO HAND": "#7A8790"}
         self.state_badge.setText(f"●  {state}"); self.state_badge.setStyleSheet(f"font-size: 12pt; font-weight: 700; color: {colors.get(state, '#7A8790')};")
         for key in ("camera", "hand", "gesture", "fps"): self.status_labels[key].setText(str(status[key]))
         debug = status["debug"]
@@ -145,8 +150,10 @@ class MainWindow(QMainWindow):
 
     def handle_gesture(self, event: str, diagnostics: dict[str, Any]) -> None:
         if self.calibration and self.calibration.isVisible(): self.calibration.record_event(event, diagnostics)
-        next_slide = event == "SWIPE_RIGHT"
-        label = "→  NEXT SLIDE" if next_slide else "←  PREVIOUS SLIDE"
+        # Canva moves the visible page opposite to the navigation arrow. Map a
+        # leftward hand swipe to Next so the page itself follows the hand.
+        next_slide = gesture_moves_to_next_slide(event)
+        label = "←  NEXT SLIDE" if next_slide else "→  PREVIOUS SLIDE"
         self.status_labels["action"].setText("Next Slide" if next_slide else "Previous Slide")
         self._show_action(label)
         if not self.control_enabled: return

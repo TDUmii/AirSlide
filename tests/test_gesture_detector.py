@@ -38,6 +38,11 @@ def test_fast_left_swipe_is_detected_once() -> None:
     assert events.count(GestureEvent.SWIPE_LEFT) == 1
 
 
+def test_short_deliberate_swipe_is_detected_with_sensitive_defaults() -> None:
+    events = feed(detector(), [0.30, 0.34, 0.38, 0.42])
+    assert events.count(GestureEvent.SWIPE_RIGHT) == 1
+
+
 @pytest.mark.parametrize(
     ("xs", "ys", "step"),
     [
