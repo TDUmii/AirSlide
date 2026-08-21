@@ -23,3 +23,29 @@ def test_stationary_hand_rearms_only_after_hold() -> None:
     assert not machine.can_detect
     machine.update(0.73, hand_present=True, open_palm=True, motion_speed=0.01)
     assert machine.can_detect
+
+
+def test_return_to_center_during_cooldown_rearms_at_cooldown_end() -> None:
+    machine = GestureStateMachine(cooldown_ms=800)
+    machine.update(0.0, hand_present=True, open_palm=True)
+    machine.trigger(0.1)
+    assert (
+        machine.update(
+            0.5,
+            hand_present=True,
+            open_palm=True,
+            motion_speed=0.8,
+            near_center=True,
+        )
+        is GestureState.COOLDOWN
+    )
+    assert (
+        machine.update(
+            0.91,
+            hand_present=True,
+            open_palm=True,
+            motion_speed=0.8,
+            near_center=False,
+        )
+        is GestureState.READY
+    )

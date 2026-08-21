@@ -21,6 +21,7 @@ class GestureStateMachine:
         self.state = GestureState.NO_HAND
         self.triggered_at = -1e9
         self._reset_started: float | None = None
+        self._reset_seen_during_cooldown = False
 
     @property
     def can_detect(self) -> bool:
@@ -33,6 +34,7 @@ class GestureStateMachine:
     def trigger(self, timestamp: float) -> None:
         self.triggered_at = timestamp
         self._reset_started = None
+        self._reset_seen_during_cooldown = False
         self.state = GestureState.COOLDOWN
 
     def update(
@@ -45,14 +47,31 @@ class GestureStateMachine:
         near_center: bool = False,
     ) -> GestureState:
         if self.state == GestureState.COOLDOWN:
+            # Returning through the center during cooldown is the most natural
+            # preparation for the next swipe. Remember it instead of discarding
+            # that physical reset with the rest of the cooldown frames.
+            if (not hand_present) or (not open_palm) or near_center:
+                self._reset_seen_during_cooldown = True
             if timestamp - self.triggered_at >= self.cooldown_s:
+                if self._reset_seen_during_cooldown:
+                    self.state = (
+                        GestureState.READY
+                        if hand_present and open_palm
+                        else GestureState.NO_HAND
+                    )
+                    self._reset_seen_during_cooldown = False
+                    return self.state
                 self.state = GestureState.WAIT_FOR_REARM
             else:
                 return self.state
 
         if self.state == GestureState.WAIT_FOR_REARM:
-            reset_condition = (not hand_present) or (not open_palm) or near_center or motion_speed < 0.10
-            required = 0.18 if (not hand_present or not open_palm or near_center) else 0.32
+            if not hand_present or not open_palm:
+                reset_condition, required = True, 0.12
+            elif near_center:
+                reset_condition, required = True, 0.06
+            else:
+                reset_condition, required = motion_speed < 0.12, 0.24
             if reset_condition:
                 self._reset_started = self._reset_started or timestamp
                 if timestamp - self._reset_started >= required:
@@ -74,3 +93,4 @@ class GestureStateMachine:
         self.state = GestureState.NO_HAND
         self.triggered_at = -1e9
         self._reset_started = None
+        self._reset_seen_during_cooldown = False

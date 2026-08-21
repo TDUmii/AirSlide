@@ -26,7 +26,12 @@ class HandTracker:
     PALM_INDICES = (0, 5, 9, 13, 17)
     FINGERS = ((5, 6, 8), (9, 10, 12), (13, 14, 16), (17, 18, 20))
 
-    def __init__(self, model_path: Path, control_hand: str = "auto") -> None:
+    def __init__(
+        self,
+        model_path: Path,
+        control_hand: str = "auto",
+        mirrored_input: bool = True,
+    ) -> None:
         if not model_path.exists():
             raise FileNotFoundError(
                 f"MediaPipe model not found: {model_path}. Run scripts/download_model.py first."
@@ -35,6 +40,7 @@ class HandTracker:
 
         self.mp = mp
         self.control_hand = control_hand.lower()
+        self.mirrored_input = mirrored_input
         self._result_lock = Lock()
         self._latest_timestamp_ms = -1
         self._latest_observation: HandObservation | None = None
@@ -75,7 +81,10 @@ class HandTracker:
         candidates: list[HandObservation] = []
         for index, raw_landmarks in enumerate(result.hand_landmarks):
             category = result.handedness[index][0]
-            label = str(category.category_name or "Unknown")
+            label = self.normalize_handedness(
+                str(category.category_name or "Unknown"),
+                self.mirrored_input,
+            )
             score = float(category.score or 0.0)
             landmarks = [(float(point.x), float(point.y), float(point.z)) for point in raw_landmarks]
             palm_x = sum(landmarks[i][0] for i in self.PALM_INDICES) / len(self.PALM_INDICES)
@@ -105,6 +114,14 @@ class HandTracker:
         )
         self._last_label = chosen.handedness
         return chosen
+
+    @staticmethod
+    def normalize_handedness(label: str, mirrored_input: bool) -> str:
+        """Map MediaPipe's camera-space label to the presenter's mirrored view."""
+        normalized = label.title()
+        if mirrored_input:
+            return {"Left": "Right", "Right": "Left"}.get(normalized, normalized)
+        return normalized
 
     @classmethod
     def open_palm_score(cls, landmarks: list[tuple[float, float, float]]) -> float:

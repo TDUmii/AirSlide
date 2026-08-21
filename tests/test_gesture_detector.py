@@ -78,6 +78,18 @@ def test_cooldown_and_rearm_block_repeated_swipes() -> None:
     assert after_rearm.count(GestureEvent.SWIPE_LEFT) == 1
 
 
+def test_open_palm_can_swipe_again_after_returning_to_center_in_cooldown() -> None:
+    engine = detector(cooldown_ms=800)
+    swipe = [0.30, 0.35, 0.42, 0.50, 0.59, 0.68]
+    first = feed(engine, swipe, start=0.0)
+    reset_motion = feed(engine, [0.64, 0.59, 0.54, 0.50], start=0.50, step=0.08)
+    second = feed(engine, swipe, start=1.28)
+
+    assert first.count(GestureEvent.SWIPE_RIGHT) == 1
+    assert all(event is GestureEvent.NONE for event in reset_motion)
+    assert second.count(GestureEvent.SWIPE_RIGHT) == 1
+
+
 def test_diagnostics_are_bounded() -> None:
     engine = detector()
     feed(engine, [0.3, 0.35, 0.42, 0.50, 0.60, 0.69])

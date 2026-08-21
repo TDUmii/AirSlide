@@ -70,7 +70,11 @@ class CameraWorker(QThread):
                 return
             self.logger.info("Camera %s initialized", self.settings["camera_index"])
             try:
-                tracker = HandTracker(self.model_path, str(self.settings["control_hand"]))
+                tracker = HandTracker(
+                    self.model_path,
+                    str(self.settings["control_hand"]),
+                    mirrored_input=bool(self.settings["mirror"]),
+                )
                 self.logger.info("MediaPipe Hand Landmarker model loaded")
             except Exception as exc:
                 self.logger.exception("MediaPipe model load failure")

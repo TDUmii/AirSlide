@@ -49,6 +49,7 @@ class GestureDetector:
         self.state_machine = GestureStateMachine(int(self.settings["cooldown_ms"]))
         self.diagnostics = GestureDiagnostics()
         self._smoothed: tuple[float, float] | None = None
+        self._last_raw: PalmSample | None = None
 
     def update(
         self,
@@ -59,7 +60,7 @@ class GestureDetector:
         open_palm_confidence: float = 0.0,
     ) -> GestureEvent:
         present = palm_x is not None and palm_y is not None
-        speed = self._recent_speed()
+        speed = self._raw_motion_speed(timestamp, palm_x, palm_y)
         near_center = bool(present and abs(float(palm_x) - 0.5) <= 0.10)
         self.state_machine.update(
             timestamp,
@@ -142,14 +143,26 @@ class GestureDetector:
             )
         return self._smoothed
 
-    def _recent_speed(self) -> float:
-        if len(self.history) < 2:
+    def _raw_motion_speed(
+        self,
+        timestamp: float,
+        palm_x: float | None,
+        palm_y: float | None,
+    ) -> float:
+        """Measure physical motion even while detection history is gated."""
+        if palm_x is None or palm_y is None:
+            self._last_raw = None
             return 0.0
-        first, last = self.history[0], self.history[-1]
-        elapsed = max(0.001, last.timestamp - first.timestamp)
-        return hypot(last.x - first.x, last.y - first.y) / elapsed
+        current = PalmSample(timestamp, float(palm_x), float(palm_y))
+        previous = self._last_raw
+        self._last_raw = current
+        if previous is None:
+            return 0.0
+        elapsed = max(0.001, current.timestamp - previous.timestamp)
+        return hypot(current.x - previous.x, current.y - previous.y) / elapsed
 
     def reset(self) -> None:
         self.history.clear()
         self._smoothed = None
+        self._last_raw = None
         self.state_machine.reset()
